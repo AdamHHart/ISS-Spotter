@@ -1,19 +1,7 @@
-/**
- * Makes a single API request to retrieve the user's IP address.
- * Input:
- *   - A callback (to pass back an error or the IP string)
- * Returns (via Callback):
- *   - An error, if any (nullable)
- *   - The IP address as a string (null if error). Example: "162.245.144.188"
- */
-
  const request = require('request');
- const fs = require('fs');
- var http = require('http');
+//  const fs = require('fs');
+//  var http = require('http');
  
-// const myIP = {}; 
-
-
 
 const fetchMyIP = function(callback) { 
   request(`https://api.ipify.org/?format=json`, (error, response, body) => {
@@ -55,21 +43,9 @@ const fetchCoordsByIp = function(ip, callback) {
     myCoords.longitude = myGeo['longitude'];
     console.log(myCoords);
     callback(null, myCoords);
-
   });
-
 };
 
-/**
- * Makes a single API request to retrieve upcoming ISS fly over times the for the given lat/lng coordinates.
- * Input:
- *   - An object with keys `latitude` and `longitude`
- *   - A callback (to pass back an error or the array of resulting data)
- * Returns (via Callback):
- *   - An error, if any (nullable)
- *   - The fly over times as an array of objects (null if error). Example:
- *     [ { risetime: 134564234, duration: 600 }, ... ]
- */
  const fetchISSFlyOverTimes = function(coords, callback) {
   // ...
   console.log("coords = ", coords);
@@ -92,4 +68,27 @@ const fetchCoordsByIp = function(ip, callback) {
 
 };
 
-module.exports = { fetchMyIP, fetchCoordsByIp, fetchISSFlyOverTimes };
+const nextISSTimesForMyLocation = function(callback) {
+  fetchMyIP((error, ip) => {
+    if (error) {
+      return callback(error, null);
+    }
+
+    fetchCoordsByIP(ip, (error, coordinates) => {
+      if (error) {
+        return callback(error, null);
+      }
+
+      fetchISSFlyOverTimes(coordinates, (error, nextPasses) => {
+        if (error) {
+          return callback(error, null);
+        }
+
+        callback(null, nextPasses);
+      });
+    });
+  });
+};
+
+
+module.exports = { fetchMyIP, fetchCoordsByIp, fetchISSFlyOverTimes, nextISSTimesForMyLocation };
